@@ -1,6 +1,10 @@
 from flask import Flask, request, jsonify
 import paho.mqtt.client as mqtt
 import ssl
+import time
+import json
+
+
 
 app = Flask(__name__)
 
@@ -32,7 +36,8 @@ def publicar_comando():
     try:
         client.connect(MQTT_BROKER, MQTT_PORT)
         client.loop_start()
-        client.publish(topic, str(payload))
+        client.publish(topic, json.dumps(payload))
+        time.sleep(1)
         client.loop_stop()
         client.disconnect()
         return jsonify({"mensaje": "Comando publicado con éxito"}), 200
