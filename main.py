@@ -12,15 +12,12 @@ MQTT_PASSWORD = "Johan123."
 @app.route('/publicar_comando', methods=['POST'])
 def publicar_comando():
     data = request.get_json()
-    lote = data.get("lote")
     comando = data.get("comando")
     angulo = data.get("angulo")
     caudal = data.get("caudal")
 
-    if not lote or not comando:
-        return jsonify({"error": "Campos 'lote' y 'comando' son requeridos"}), 400
 
-    topic = f"caudal/lote/{lote}/comandos"
+    topic = f"caudal/lote/1852896-025/comandos"
     payload = {"comando": comando}
     if angulo is not None:
         payload["angulo"] = angulo
