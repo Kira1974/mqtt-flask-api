@@ -27,9 +27,11 @@ def on_message(client, userdata, msg):
     print(f"📩 Mensaje recibido en {msg.topic}:", msg.payload.decode())
     try:
         payload = json.loads(msg.payload.decode())
-        requests.post(DJANGO_ENDPOINT, json=payload)
+        response = requests.post(DJANGO_ENDPOINT, json=payload)
+        print(f"➡️ POST a Django status: {response.status_code}, body: {response.text}")
     except Exception as e:
         print("❌ Error al reenviar a Django:", e)
+
 
 
 def start_mqtt_listener():
