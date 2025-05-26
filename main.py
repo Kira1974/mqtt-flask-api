@@ -102,7 +102,7 @@ def publicar_comando_bocatoma():
     if not id_valvula:
         return jsonify({"error": "El campo 'id_valvula' es obligatorio para bocatoma"}), 400
 
-    topic = f"caudal/bocatoma/{id_valvula}/comandos"
+    topic = f"caudal/valvula/{id_valvula}/comandos"
     payload = {"comando": comando}
     if angulo is not None:
         payload["angulo"] = angulo
