@@ -6,8 +6,9 @@ import json
 import os
 import threading
 import requests
-
+from flask_cors  import CORS
 app = Flask(__name__)
+CORS(app)
 
 MQTT_BROKER = "d4abf07c55364762bf6b41af1122a4ab.s1.eu.hivemq.cloud"
 MQTT_PORT = 8883
@@ -15,7 +16,7 @@ MQTT_USER = "johan"
 MQTT_PASSWORD = "Johan123."
 DJANGO_ENDPOINT = os.getenv(
     "DJANGO_ENDPOINT",
-    "https://desarrollo-aquasmart-backend-develop.onrender.com/api/esp32/recibir-consumo"
+    "http://127.0.0.1:8000/api/esp32/recibir-consumo"
 )
 # --- MQTT CALLBACK PARA DATOS ---
 def on_connect(client, userdata, flags, rc):
@@ -23,12 +24,19 @@ def on_connect(client, userdata, flags, rc):
     client.subscribe("caudal/lote/1852896-025/datos")
 
 
+last_payload = None
+
 def on_message(client, userdata, msg):
-    print(f"📩 Mensaje recibido en {msg.topic}:", msg.payload.decode())
+    global last_payload
+    payload_str = msg.payload.decode()
+    if payload_str == last_payload:
+        print("Mensaje duplicado ignorado")
+        return
+    last_payload = payload_str
+    print(f"📩 Mensaje recibido en {msg.topic}:", payload_str)
     try:
-        payload = json.loads(msg.payload.decode())
-        response = requests.post(DJANGO_ENDPOINT, json=payload)
-        print(f"➡️ POST a Django status: {response.status_code}, body: {response.text}")
+        payload = json.loads(payload_str)
+        requests.post(DJANGO_ENDPOINT, json=payload)
     except Exception as e:
         print("❌ Error al reenviar a Django:", e)
 
@@ -43,6 +51,8 @@ def start_mqtt_listener():
     client.on_message = on_message
 
     client.connect(MQTT_BROKER, MQTT_PORT)
+
+    # Usar loop_forever solo una vez, NO dentro de un thread que se llame varias veces
     client.loop_forever()
 
 
