@@ -17,7 +17,7 @@ MQTT_USER = "johan"
 MQTT_PASSWORD = "Johan123."
 DJANGO_ENDPOINT = os.getenv(
     "DJANGO_ENDPOINT",
-    "http://https://desarrollo-aquasmart-backend-develop.onrender.com/api/esp32/recibir-consumo"
+    "https://desarrollo-aquasmart-backend-develop.onrender.com/api/esp32/recibir-consumo"
 )
 
 # --- MQTT CALLBACK PARA DATOS ---
@@ -54,7 +54,7 @@ def on_message(client, userdata, msg):
         }
         DJANGO_FLOW_ENDPOINT = os.getenv(
             "DJANGO_FLOW_ENDPOINT",
-            "http://https://desarrollo-aquasmart-backend-develop.onrender.com/api/caudal/flow-measurements/lote/crear"
+            "https://desarrollo-aquasmart-backend-develop.onrender.com/api/caudal/flow-measurements/lote/crear"
         )
         res2 = requests.post(
             DJANGO_FLOW_ENDPOINT,
