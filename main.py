@@ -17,13 +17,13 @@ MQTT_USER = "johan"
 MQTT_PASSWORD = "Johan123."
 DJANGO_ENDPOINT = os.getenv(
     "DJANGO_ENDPOINT",
-    "http://127.0.0.1:8000/api/esp32/recibir-consumo"
+    "http://https://desarrollo-aquasmart-backend-develop.onrender.com/api/esp32/recibir-consumo"
 )
 
 # --- MQTT CALLBACK PARA DATOS ---
 def on_connect(client, userdata, flags, rc):
     print("✅ Conectado al broker MQTT para recibir datos")
-    client.subscribe("caudal/lote/1852896-025/datos")
+    client.subscribe("caudal/lote/1564782-001/datos")
 
 last_payload = None
 
@@ -37,9 +37,35 @@ def on_message(client, userdata, msg):
     print(f"📩 Mensaje recibido en {msg.topic}:", payload_str)
     try:
         payload = json.loads(payload_str)
-        requests.post(DJANGO_ENDPOINT, json=payload)
+        
+        # POST 1 - Para modelo Consumo
+        res1 = requests.post(
+            DJANGO_ENDPOINT,
+            json=payload,
+            timeout=5
+        )
+        print("POST Consumo:", res1.status_code, res1.text)
+        
+        # POST 2 - Para FlowMeasurementLote
+        flujo_parcial_payload = {
+            "device": payload.get("device"),
+            "flow_rate": payload.get("consumo_parcial_L"),
+            "timestamp": payload.get("timestamp")
+        }
+        DJANGO_FLOW_ENDPOINT = os.getenv(
+            "DJANGO_FLOW_ENDPOINT",
+            "http://https://desarrollo-aquasmart-backend-develop.onrender.com/api/caudal/flow-measurements/lote/crear"
+        )
+        res2 = requests.post(
+            DJANGO_FLOW_ENDPOINT,
+            json=flujo_parcial_payload,
+            timeout=5
+        )
+        print("POST FlowMeasurementLote:", res2.status_code, res2.text)
+
     except Exception as e:
         print("❌ Error al reenviar a Django:", e)
+
 
 def start_mqtt_listener():
     client = mqtt.Client()
